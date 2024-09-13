@@ -1,5 +1,7 @@
 const Admin=require('../models/adminModel')
-const jwt=require('jsonwebtoken')
+const jwt=require('jsonwebtoken');
+const User = require('../models/userModel');
+const Pets = require('../models/pet');
 
 const AdminLogin = async (req, res) => {
     console.log('Finding login route');
@@ -42,7 +44,30 @@ const adminLogout = (req, res) => {
     return res.status(200).json({ message: 'Logout successful' });
 };
 
+
+const userList=async(req,res)=>{
+    try{
+        const users=await User.find()
+        console.log('userlisting',users);
+        return res.status(200).json(users)
+    }catch(error){
+        console.log('error during userlisting',error)
+    }
+}
+
+const petList=async(req,res)=>{
+    try{
+        const pets=await Pets.find()
+        console.log('fetched pets',pets);
+        res.status(200).json(pets)
+    }catch(error){
+        console.log('fetching petlist error',error);
+        
+    }
+}
 module.exports={
     AdminLogin,
-    adminLogout
+    adminLogout,
+    userList,
+    petList
 }
