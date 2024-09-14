@@ -12,4 +12,5 @@ router.post('/petsadoption',authMiddleware,upload.single('image'),userController
 router.get('/adoptedpetget',authMiddleware,userController.adoptedPetGet)
 router.get('/pets',authMiddleware,userController.fullPetList)
 router.get('/petowner/:userId',authMiddleware,userController.petOwner)
+router.post('/confirmadoption',authMiddleware,userController.confirmAdoption)
 module.exports=router

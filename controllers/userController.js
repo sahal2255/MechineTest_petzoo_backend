@@ -4,8 +4,8 @@ const bcrypt=require('bcrypt')
 const mongoose=require('mongoose')
 const cloudinary=require('../utils/cloudinaryConfig')
 const Pets=require('../models/pet')
-
-
+const Admin=require('../models/adminModel')
+const Adoption=require('../models/adoption')
 const userSign=async(req,res)=>{
     const {userName,email,password,phoneNumber}=req.body
     console.log('userName',userName);
@@ -177,31 +177,68 @@ const fullPetList=async(req,res)=>{
 
 
 const petOwner = async (req, res) => {
-  console.log('petOwner');
-  const ownerId = req.params.userId;
-  console.log('userId', ownerId);
-
-  // Check if the userId is valid
-  if (!mongoose.Types.ObjectId.isValid(ownerId)) {
-    return res.status(400).json({ message: 'Invalid userId format' });
-  }
-
-  try {
-    const user = await User.findById(ownerId); 
-    console.log('o', user);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    console.log('petOwner');
+    const ownerId = req.params.userId;
+    console.log('userId', ownerId);
+  
+    try {
+      let user = await User.findById(ownerId);  // Use `let` instead of `const`
+      console.log('User:', user);
+  
+      if (!user) {
+        // If no user is found, try to find in the Admin collection
+        console.log('User not found, checking Admin collection...');
+        user = await Admin.findById(ownerId);
+        console.log('Admin:', user);
+      }
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User or Admin not found' });
+      }
+  
+      console.log('owner', user);
+      res.json(user);
+  
+    } catch (error) {
+      console.error('Error fetching user/admin details:', error);
+      res.status(500).json({ message: 'Server error' });
     }
-    console.log('owner', user);
+  };
 
-    res.json(user);
-  } catch (error) {
-    console.error('Error fetching user details:', error);
-    res.status(500).json({ message: 'Server error' });
+
+  const confirmAdoption =async(req,res)=>{
+    console.log('confirmation route founded')
+    const { petId, ownerId } = req.body;
+    const userId=req.user.userId
+    // console.log('recieved petId',petId)
+    // console.log('recieved ownerId',ownerId);
+    // console.log('userId',userId)
+    try {
+        let existingAdoption = await Adoption.findOne({ petId, userId });
+    
+        if (existingAdoption) {
+            console.log('Adoption request already exists.');
+            
+          return res.status(400).json({ message: 'Adoption request already exists.' });
+        }
+    
+        const newAdoption = new Adoption({
+          userId, 
+          petId, 
+          ownerId, 
+          status: 'pending' 
+        });
+    
+        // Save the adoption request to the database
+        const savedAdoption = await newAdoption.save();
+    
+        console.log('Adoption confirmed:', savedAdoption);
+        res.status(201).json({ message: 'Adoption request successfully created.', adoption: savedAdoption });
+      } catch (error) {
+        console.error('Error during adoption confirmation:', error);
+        res.status(500).json({ message: 'Server error during adoption confirmation.' });
+      }
   }
-};
-
 
 
 module.exports={
@@ -211,5 +248,6 @@ module.exports={
     petsAdopt,
     adoptedPetGet,
     fullPetList,
-    petOwner
+    petOwner,
+    confirmAdoption
 }
