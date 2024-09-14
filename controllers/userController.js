@@ -1,8 +1,11 @@
 const User=require('../models/userModel')
 const jwt = require('jsonwebtoken')
 const bcrypt=require('bcrypt')
+const mongoose=require('mongoose')
 const cloudinary=require('../utils/cloudinaryConfig')
 const Pets=require('../models/pet')
+
+
 const userSign=async(req,res)=>{
     const {userName,email,password,phoneNumber}=req.body
     console.log('userName',userName);
@@ -91,9 +94,9 @@ const profileGet = async (req, res) => {
 
 const petsAdopt=async(req,res)=>{
     try {
-        console.log('Received data:', req.body);  
-        console.log('Received file:', req.file);  
-        console.log('userId',req.user.userId);
+        // console.log('Received data:', req.body);  
+        // console.log('Received file:', req.file);  
+        // console.log('userId',req.user.userId);
         const userId=req.user.userId
         // Upload image to Cloudinary
         const result = await cloudinary.uploader.upload(req.file.path, {
@@ -101,7 +104,7 @@ const petsAdopt=async(req,res)=>{
             use_filename: true,
             unique_filename: false
         });
-        console.log('result',result);
+        // console.log('result',result);
         
         const newPet = new Pets({
             name: req.body.name,
@@ -110,7 +113,7 @@ const petsAdopt=async(req,res)=>{
             image: result.secure_url,  
             userId: userId
         });
-        console.log('new pte',newPet);
+        // console.log('new pte',newPet);
         
         await newPet.save();
 
@@ -159,6 +162,46 @@ const adoptedPetGet = async (req, res) => {
     }
 };
 
+const fullPetList=async(req,res)=>{
+    try{
+        const pets=await Pets.find()
+        // console.log('full pet list',pets);
+        
+        res.status(200).json({pets})
+    }catch(error){
+        console.log('petslist eror',error);
+        
+    }
+}
+
+
+
+const petOwner = async (req, res) => {
+  console.log('petOwner');
+  const ownerId = req.params.userId;
+  console.log('userId', ownerId);
+
+  // Check if the userId is valid
+  if (!mongoose.Types.ObjectId.isValid(ownerId)) {
+    return res.status(400).json({ message: 'Invalid userId format' });
+  }
+
+  try {
+    const user = await User.findById(ownerId); 
+    console.log('o', user);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    console.log('owner', user);
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 
 
 module.exports={
@@ -166,5 +209,7 @@ module.exports={
     userLogin,
     profileGet,
     petsAdopt,
-    adoptedPetGet
+    adoptedPetGet,
+    fullPetList,
+    petOwner
 }

@@ -11,7 +11,7 @@ const authMiddleware = (req, res, next) => {
       return res.status(403).json({ message: 'Invalid token' });
     }
 
-    console.log('Decoded user:', user); // Log decoded user for debugging
+    // console.log('Decoded user:', user); // Log decoded user for debugging
 
     req.user = user; // Attach user information to req.user
     next(); // Proceed to the next middleware/controller

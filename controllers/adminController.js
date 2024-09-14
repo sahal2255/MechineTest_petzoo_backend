@@ -1,6 +1,8 @@
 const Admin=require('../models/adminModel')
 const jwt=require('jsonwebtoken');
 const User = require('../models/userModel');
+const cloudinary=require('../utils/cloudinaryConfig')
+
 const Pets = require('../models/pet');
 
 const AdminLogin = async (req, res) => {
@@ -58,16 +60,56 @@ const userList=async(req,res)=>{
 const petList=async(req,res)=>{
     try{
         const pets=await Pets.find()
-        console.log('fetched pets',pets);
+        // console.log('fetched pets',pets);
         res.status(200).json(pets)
     }catch(error){
         console.log('fetching petlist error',error);
         
     }
 }
+
+const AdminAdoptPet=async(req,res)=>{
+    try {
+        console.log('Received data:', req.body);  
+        console.log('Received file:', req.file);  
+        console.log('userId',req.user.userId);
+        const userId=req.user.userId
+        // Upload image to Cloudinary
+        const result = await cloudinary.uploader.upload(req.file.path, {
+            folder: 'pets_adoption', 
+            use_filename: true,
+            unique_filename: false
+        });
+        console.log('result',result);
+        
+        const newPet = new Pets({
+            name: req.body.name,
+            age: req.body.age,
+            breed: req.body.breed,
+            image: result.secure_url,  
+            userId: userId
+        });
+        console.log('new pte',newPet);
+        
+        await newPet.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Pet successfully added for adoption',
+            pet: newPet
+        });
+    } catch (error) {
+        console.error('Error in petsAdopt:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error, unable to add pet for adoption',
+        });
+    }
+}
 module.exports={
     AdminLogin,
     adminLogout,
     userList,
-    petList
+    petList,
+    AdminAdoptPet
 }
