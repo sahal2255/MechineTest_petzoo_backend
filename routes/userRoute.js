@@ -13,4 +13,6 @@ router.get('/adoptedpetget',authMiddleware,userController.adoptedPetGet)
 router.get('/pets',authMiddleware,userController.fullPetList)
 router.get('/petowner/:userId',authMiddleware,userController.petOwner)
 router.post('/confirmadoption',authMiddleware,userController.confirmAdoption)
+router.get('/adoptionrequests',authMiddleware,userController.adoptionRequests)
+
 module.exports=router

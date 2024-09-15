@@ -233,13 +233,31 @@ const petOwner = async (req, res) => {
         const savedAdoption = await newAdoption.save();
     
         console.log('Adoption confirmed:', savedAdoption);
-        res.status(201).json({ message: 'Adoption request successfully created.', adoption: savedAdoption });
+        res.status(201).json({ message: 'Adoption request was confirmed we will connect later', adoption: savedAdoption });
       } catch (error) {
         console.error('Error during adoption confirmation:', error);
         res.status(500).json({ message: 'Server error during adoption confirmation.' });
       }
   }
 
+
+  const adoptionRequests = async (req, res) => {
+    console.log('request route founded');
+    
+    const userId = req.user.userId;
+    console.log('userId', userId);
+    
+    try {
+      const requests = await Adoption.find({ userId });
+      console.log('filtered adoption requests', requests);
+      
+      res.json(requests);
+    } catch (error) {
+      console.log('error', error);
+      res.status(500).json({ error: 'Failed to fetch adoption requests' });
+    }
+  };
+  
 
 module.exports={
     userSign,
@@ -249,5 +267,6 @@ module.exports={
     adoptedPetGet,
     fullPetList,
     petOwner,
-    confirmAdoption
+    confirmAdoption,
+    adoptionRequests
 }
