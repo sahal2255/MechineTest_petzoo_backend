@@ -12,4 +12,6 @@ router.post('/admin/login', adminController.AdminLogin);
 router.get('/admin/users',authMiddleware,adminController.userList)
 router.get('/admin/petlist',authMiddleware,adminController.petList)
 router.post('/admin/adoptpet',authMiddleware,upload.single('image'),adminController.AdminAdoptPet)
+router.get('/admin/adoptionrequests',authMiddleware,adminController.AdoptionRequests)
+router.put('/admin/adoptionrequests/:id/status',authMiddleware,adminController.updateStatus)
 module.exports = router;

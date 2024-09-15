@@ -4,6 +4,7 @@ const User = require('../models/userModel');
 const cloudinary=require('../utils/cloudinaryConfig')
 
 const Pets = require('../models/pet');
+const Adoption = require('../models/adoption');
 
 const AdminLogin = async (req, res) => {
     console.log('Finding login route');
@@ -106,10 +107,46 @@ const AdminAdoptPet=async(req,res)=>{
         });
     }
 }
+
+const AdoptionRequests=async(req,res)=>{
+    console.log('founded the the rouete')
+    try{
+        const Adopted=await Adoption.find()
+        console.log('adoption list',Adopted);
+        res.status(200).json(Adopted)
+        
+    }catch(error){
+        console.log('error',error)
+    }
+}
+
+const updateStatus=async(req,res)=>{
+    const { id } = req.params;
+    const { status } = req.body;
+  
+    try {
+      const adoptionRequest = await Adoption.findByIdAndUpdate(
+        id,
+        { status },
+        { new: true }
+      );
+      if (!adoptionRequest) {
+        return res.status(404).json({ message: 'Adoption request not found' });
+      }
+      console.log('adoption request',adoptionRequest);
+      
+      res.status(200).json(adoptionRequest);
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating adoption status', error });
+    }
+}
+
 module.exports={
     AdminLogin,
     adminLogout,
     userList,
     petList,
-    AdminAdoptPet
+    AdminAdoptPet,
+    AdoptionRequests,
+    updateStatus
 }
